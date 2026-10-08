@@ -16,11 +16,13 @@ KYC with tiers, cards, block/report users, fraud rules, support tickets.
 Messaging between users.
 
 ## Folder Structure
-   mini-upi-wallet/
+```
+   QuantumLedger/
    ├── docs/        <- scope, design notes, diagrams
    ├── backend/     <- Spring Boot app (from Day 1)
    ├── infra/       <- docker-compose files (from Day 1)
    ├── frontend/    <- React app (much later)
    └── README.md
+```
 
 
