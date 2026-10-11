@@ -9,36 +9,42 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService{
 
     private final UserRepository userRepository;
+    private final UserCredentialRepository userCredentialRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+   public UserService(UserRepository userRepository, UserCredentialRepository userCredentialRepository, PasswordEncoder passwordEncoder) {
+       this.userRepository = userRepository;
+       this.userCredentialRepository = userCredentialRepository;
+       this.passwordEncoder = passwordEncoder;
+   }
 
-    @Transactional
-    public User register(String title, String firstName, String lastName, String emailId, String countryCode, String phone, String rawPassword) {
-        String normalizedEmail = emailId.trim().toLowerCase();
+   @Transactional
+   public User register(String title, String firstName, String lastName, String email,
+                        String countryCode, String phone, String rawPassword) {
 
-        if(userRepository.existsByEmailId(normalizedEmail)){
-            throw new DuplicateUserException("Email ID already registered");
-        }
+       String normalizedEmail = email.trim().toLowerCase();
 
-        if(userRepository.existsByCountryCodeAndPhone(countryCode, phone)){
-            throw new DuplicateUserException("Country Code and Phone already registered");
-        }
+       if(userRepository.existsByEmailId(normalizedEmail)){
+           throw new DuplicateUserException("Email already registered");
+       }
 
-        User user = new User(
-                blankToNull(title),
-                firstName,
-                blankToNull(lastName),
-                normalizedEmail,
-                countryCode,
-                phone,
-                passwordEncoder.encode(rawPassword));
+       if(userRepository.existsByCountryCodeAndPhone(countryCode, phone)){
+           throw new DuplicateUserException("Phone already registered");
+       }
 
-        return userRepository.saveAndFlush(user);
-    }
+       User user = userRepository.saveAndFlush(new User(
+               blankToNull(title),
+               firstName,
+               blankToNull(lastName),
+               normalizedEmail,
+               countryCode,
+               phone));
+
+       userCredentialRepository.save(new UserCredential(user.getUserId(),
+               passwordEncoder.encode(rawPassword)));
+
+       return user;
+   }
 
     private static String blankToNull(String value) {
         return (value == null || value.isBlank()) ? null : value.trim();

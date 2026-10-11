@@ -37,8 +37,8 @@ public class User {
     @Column(name = "phone", nullable = false)
     private String phone;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    //@Column(name = "password_hash", nullable = false) -- migrated to user_credentials table
+    //private String passwordHash;
 
     @Column(name = "status", nullable = false)
     private String status = "ACTIVE";
@@ -54,7 +54,7 @@ public class User {
 
     protected User() { }
 
-    public User(String title, String firstName, String lastName, String emailId, String countryCode, String phone, String passwordHash) {
+    public User(String title, String firstName, String lastName, String emailId, String countryCode, String phone) {
         this.title = title;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -62,7 +62,7 @@ public class User {
         this.emailId = emailId;
         this.countryCode = countryCode;
         this.phone = phone;
-        this.passwordHash = passwordHash;
+        // this.passwordHash = passwordHash;        -- migrated to user credentials
     }
 
     @PrePersist
@@ -108,9 +108,10 @@ public class User {
         return phone;
     }
 
-    public String getPasswordHash() {
+    // migrated to user_credentials
+    /* public String getPasswordHash() {
         return passwordHash;
-    }
+    }*/
 
     public String getStatus() {
         return status;
