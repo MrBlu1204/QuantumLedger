@@ -5,7 +5,7 @@ CREATE TABLE users (
     last_name       VARCHAR(50),
     full_name       VARCHAR(100)    NOT NULL ,
     email_id        VARCHAR(255)    NOT NULL ,
-    country_code    VARCHAR(20)     NOT NULL DEFAULT 'India(+91)' ,
+    country_code    VARCHAR(20)     NOT NULL DEFAULT '+91' ,
     phone           VARCHAR(15)     NOT NULL ,
     password_hash   VARCHAR(100)    NOT NULL ,
     status          VARCHAR(20)     NOT NULL DEFAULT 'ACTIVE' ,
