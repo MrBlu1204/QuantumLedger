@@ -1,4 +1,6 @@
 package com.quantumledger.app.auth;
 
-public record LoginResponse(Long userId, String fullName, String message) {
+import com.quantumledger.app.user.UserResponse;
+
+public record LoginResponse(String tokenType, String accessToken, long expiresInSeconds, UserResponse userResponse) {
 }

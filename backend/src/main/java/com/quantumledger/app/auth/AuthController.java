@@ -14,11 +14,13 @@ public class AuthController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final JwtService jwtService;
 
-    public AuthController(UserService userService, AuthService authService) {
+    public AuthController(UserService userService, AuthService authService, JwtService jwtService) {
 
         this.userService = userService;
         this.authService = authService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/signup")
@@ -35,7 +37,8 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
         User user = authService.login(loginRequest.email(), loginRequest.password());
-        return new LoginResponse(user.getUserId(), user.getFullName(), "Credentials verified. Token: <placeholder>");
+        JwtService.AccessToken token = jwtService.createAccessToken(user);
+        return new LoginResponse("Bearer", token.value(), token.expiresInSeconds(), UserResponse.from(user));
     }
 
 
