@@ -69,10 +69,17 @@
 			<artifactId>flyway-mysql</artifactId>
 		</dependency>
 
-		<!-- For Password hashing and crypto; later to be replaced by Spring Security -->
+		<!-- For Password hashing and crypto; later to be replaced by Spring Security
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
+		Replace with Spring Security -->
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
 		<!-- for jUnit & testing -->

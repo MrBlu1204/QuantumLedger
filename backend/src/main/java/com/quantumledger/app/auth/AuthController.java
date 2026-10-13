@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final AuthService authService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, AuthService authService) {
+
         this.userService = userService;
+        this.authService = authService;
     }
 
     @PostMapping("/signup")
@@ -27,6 +30,12 @@ public class AuthController {
                 countryCode, signupRequest.phone(), signupRequest.password());
 
         return UserResponse.from(user);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+        User user = authService.login(loginRequest.email(), loginRequest.password());
+        return new LoginResponse(user.getUserId(), user.getFullName(), "Credentials verified. Token: <placeholder>");
     }
 
 

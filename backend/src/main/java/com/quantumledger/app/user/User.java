@@ -117,7 +117,7 @@ public class User {
         return status;
     }
 
-    public Boolean getDeleted() {
+    public Boolean isDeleted() {
         return isDeleted;
     }
 

@@ -1,5 +1,7 @@
 package com.quantumledger.app.common;
 
+import com.quantumledger.app.auth.AccountNotActiveException;
+import com.quantumledger.app.auth.InvalidCredentialsException;
 import com.quantumledger.app.user.DuplicateUserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,5 +49,17 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error","DATA_ERROR","message","Could not register user"));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String,Object>> handleInvalidCredentials(InvalidCredentialsException ex){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error","INVALID_CREDENTIALS","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccountNotActiveException.class)
+    public ResponseEntity<Map<String,Object>> handleAccountNotActive(AccountNotActiveException ex){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error","ACCOUNT_NOT_ACTIVE","message",ex.getMessage()));
     }
 }
