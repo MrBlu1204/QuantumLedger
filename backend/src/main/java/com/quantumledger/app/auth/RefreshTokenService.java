@@ -113,5 +113,17 @@ public class RefreshTokenService {
         return new InvalidRefreshTokenException();
     }
 
+    @Transactional
+    public void logout(String rawToken) {
+        repository.findByTokenHash(hash(rawToken))
+                .ifPresent(token -> repository.revokeActiveInFamily(token.getFamilyId()));
+
+    }
+
+    @Transactional
+    public void logoutAll(Long userId) {
+        repository.revokeAllActiveForUser(userId);
+    }
+
 
 }

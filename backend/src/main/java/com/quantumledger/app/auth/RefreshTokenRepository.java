@@ -20,4 +20,10 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Query("update RefreshToken t set t.status = 'REVOKED' "
     + "where t.familyId = :familyId and t.status = 'ACTIVE'")
     int revokeActiveInFamily(@Param("familyId") String familyId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update RefreshToken t set t.status = 'REVOKED' "
+    + "where t.userId = :userId and t.status = 'ACTIVE'")
+    int revokeAllActiveForUser(@Param("userId") Long userId);
+
 }
