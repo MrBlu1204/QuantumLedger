@@ -1,5 +1,6 @@
 package com.quantumledger.app.user;
 
+import com.quantumledger.app.auth.AccountNotActiveException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -43,6 +44,17 @@ public class UserService{
        userCredentialRepository.save(new UserCredential(user.getUserId(),
                passwordEncoder.encode(rawPassword)));
 
+       return user;
+   }
+
+   @Transactional(readOnly = true)
+   public User getActiveUser(Long userId){
+       User user = userRepository.findById(userId).orElseThrow(() -> new AccountNotActiveException("Account is not " +
+               "available"));
+
+       if(user.isDeleted() || !"ACTIVE".equals(user.getStatus())){
+           throw new AccountNotActiveException("Account is not available");
+       }
        return user;
    }
 
