@@ -15,12 +15,14 @@ public class AuthController {
     private final UserService userService;
     private final AuthService authService;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthController(UserService userService, AuthService authService, JwtService jwtService) {
+    public AuthController(UserService userService, AuthService authService, JwtService jwtService, RefreshTokenService refreshTokenService) {
 
         this.userService = userService;
         this.authService = authService;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/signup")
@@ -38,7 +40,10 @@ public class AuthController {
     public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
         User user = authService.login(loginRequest.email(), loginRequest.password());
         JwtService.AccessToken token = jwtService.createAccessToken(user);
-        return new LoginResponse("Bearer", token.value(), token.expiresInSeconds(), UserResponse.from(user));
+        RefreshTokenService.IssuedRefreshToken refresh = refreshTokenService.issueForNewSession(user.getUserId());
+
+        return new LoginResponse("Bearer", token.value(), token.expiresInSeconds(),
+                refresh.value(), refresh.expiresInSeconds(), UserResponse.from(user));
     }
 
 
