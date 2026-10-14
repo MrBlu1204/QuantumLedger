@@ -1,5 +1,6 @@
 package com.quantumledger.app.auth;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,10 @@ import java.util.UUID;
 
 @Service
 public class RefreshTokenService {
+
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(RefreshTokenService.class);
+
+    public record Rotation(Long userId, String familyId, IssuedRefreshToken newToken) {}
 
     public record IssuedRefreshToken(String value, long expiresInSeconds) {}
 
@@ -61,6 +66,51 @@ public class RefreshTokenService {
         } catch (NoSuchAlgorithmException e){
             throw new IllegalStateException("SHA-256 algorithm not found", e);
         }
+    }
+
+    @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
+    public Rotation rotate(String rawToken) {
+        RefreshToken current = repository.findByTokenHash(hash(rawToken)).orElseThrow(InvalidRefreshTokenException::new);
+
+        Instant now = Instant.now();
+
+        if(RefreshToken.REVOKED.equals(current.getStatus())) {
+            throw new InvalidRefreshTokenException();
+        }
+
+        if(RefreshToken.USED.equals(current.getStatus())) {
+            throw reuseDetected(current);
+        }
+
+        if(current.getExpiresAt().isBefore(now)) {
+            throw new InvalidRefreshTokenException();
+        }
+
+        /** log.info("Refresh Token details: refreshTokenId={}, userId={}, familyId={}",
+                current.getRefreshTokenId(), current.getUserId(), current.getFamilyId());
+         */
+
+        int updated = repository.markUsedIfActive(current.getRefreshTokenId(),now);
+        if(updated == 0) {
+            throw reuseDetected(current);  //lost a race: someone else used it first
+        }
+
+        IssuedRefreshToken next = issue(current.getUserId(), current.getFamilyId());
+        return new Rotation(current.getUserId(), current.getFamilyId(), next);
+
+    }
+
+    @Transactional
+    public void revokeFamily(String familyId) {
+        repository.revokeActiveInFamily(familyId);
+    }
+
+    private InvalidRefreshTokenException reuseDetected(RefreshToken token) {
+        repository.revokeActiveInFamily(token.getFamilyId());
+        log.warn("Refresh token reuse detected: userId={}, familyId={}. Session family revoked.", token.getUserId(),
+                token.getFamilyId());
+
+        return new InvalidRefreshTokenException();
     }
 
 

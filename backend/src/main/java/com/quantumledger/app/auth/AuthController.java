@@ -46,5 +46,14 @@ public class AuthController {
                 refresh.value(), refresh.expiresInSeconds(), UserResponse.from(user));
     }
 
+    @PostMapping("/refresh")
+    public LoginResponse refresh(@Valid @RequestBody RefreshRequest request) {
+
+        AuthService.Session s = authService.refresh(request.refreshToken());
+
+        return new LoginResponse("Bearer", s.access().value(), s.access().expiresInSeconds(),
+                s.refresh().value(), s.refresh().expiresInSeconds(), UserResponse.from(s.user()));
+    }
+
 
 }

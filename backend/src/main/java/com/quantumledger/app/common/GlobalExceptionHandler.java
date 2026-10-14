@@ -2,6 +2,7 @@ package com.quantumledger.app.common;
 
 import com.quantumledger.app.auth.AccountNotActiveException;
 import com.quantumledger.app.auth.InvalidCredentialsException;
+import com.quantumledger.app.auth.InvalidRefreshTokenException;
 import com.quantumledger.app.user.DuplicateUserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,4 +63,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error","ACCOUNT_NOT_ACTIVE","message",ex.getMessage()));
     }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<Map<String,Object>> handleInvalidRefresh(InvalidRefreshTokenException ex){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error","INVALID_REFRESH_TOKEN","message",ex.getMessage()));
+    }
+
 }

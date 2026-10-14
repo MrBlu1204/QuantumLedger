@@ -67,4 +67,8 @@ public class RefreshToken {
     public Instant getExpiresAt() {
         return expiresAt;
     }
+
+    public Long getRefreshTokenId() {
+        return refreshTokenId;
+    }
 }
