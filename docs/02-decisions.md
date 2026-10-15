@@ -38,3 +38,18 @@
   Signup writes users and user_credentials in one transaction.
 - Plan: move user_credentials to its own schema with a separate DB user in phase 5.5.
   Secrets go in a vault, not a database.
+
+## 007 – Authentication and sessions
+- Access token: JWT, HS256, 15 minutes, built with Spring Security's Nimbus support.
+  Claims: iss, sub (user id), iat, exp, jti. No personal data in the token.
+- Refresh token: opaque 256-bit random value, 7 days. Only its SHA-256 hash is stored.
+  Rotated on every use. Each login starts a token family; replaying a used token revokes
+  the whole family.
+- The signing secret comes from the JWT_SECRET environment variable and has no default.
+- Endpoints that matter re-check the user's status in the database, because a signed
+  token can't be cancelled before it expires.
+- Public paths are listed explicitly; everything else requires a token (deny by default).
+- Known limitations, deliberately deferred: no instant access-token revocation (Redis
+  deny-list on jti, phase 5), no failed-login limiting (Redis rate limiter, phase 5),
+  symmetric signing key (move to asymmetric keys and a vault, phase 5.5), no grace window
+  for refresh retries (phase 4).

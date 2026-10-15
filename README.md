@@ -1,5 +1,7 @@
 # QuantumLedger
-A payment wallet app that can do a lot more than just send money
+
+A UPI-style digital wallet backend: signup, login, balances, transfers and statements.
+Built with Spring Boot 4, MySQL, and (later) Redis and Kafka.
 
 ## Feature groups and dependencies
 
@@ -24,5 +26,29 @@ Messaging between users.
    ├── frontend/    <- React app (much later)
    └── README.md
 ```
+
+
+
+## Run locally
+
+Prerequisites: JDK 17, Docker Desktop.
+
+1. Start the database:
+```
+   cd infra
+   copy .env.example .env      (then edit the values)
+   docker compose up -d
+```
+2. Generate a signing key and set it as the `JWT_SECRET` environment variable:
+```
+   $b = New-Object byte[] 32
+   [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+   [Convert]::ToBase64String($b)
+```
+3. Run `QuantumLedgerApplication` (or `./mvnw spring-boot:run` in `backend`).
+
+## Docs
+
+See `docs/` for the scope, the decision log, and the roadmap.
 
 
