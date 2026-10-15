@@ -1,6 +1,7 @@
 package com.quantumledger.app.user;
 
 import com.quantumledger.app.auth.AccountNotActiveException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -12,11 +13,16 @@ public class UserService{
     private final UserRepository userRepository;
     private final UserCredentialRepository userCredentialRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
-   public UserService(UserRepository userRepository, UserCredentialRepository userCredentialRepository, PasswordEncoder passwordEncoder) {
+   public UserService(UserRepository userRepository,
+                      UserCredentialRepository userCredentialRepository,
+                      PasswordEncoder passwordEncoder,
+                      ApplicationEventPublisher eventPublisher) {
        this.userRepository = userRepository;
        this.userCredentialRepository = userCredentialRepository;
        this.passwordEncoder = passwordEncoder;
+       this.eventPublisher = eventPublisher;
    }
 
    @Transactional
@@ -43,6 +49,8 @@ public class UserService{
 
        userCredentialRepository.save(new UserCredential(user.getUserId(),
                passwordEncoder.encode(rawPassword)));
+
+       eventPublisher.publishEvent(new UserRegisteredEvent(user.getUserId()));
 
        return user;
    }

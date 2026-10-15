@@ -14,12 +14,14 @@ public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, Long> 
      */
 
     @Query("""
-            select coalesce(sum(case when e.direction = com.quantumLedger.app.ledger.Direction.CREDIT
-                                     then e.amountMinor 
-                                     else -e.amountMinor 
-                                     end), OL)
+            select coalesce(sum(case when e.direction = com.quantumledger.app.ledger.Direction.CREDIT
+                                     then e.amountMinor
+                                     else -e.amountMinor
+                                     end), 0L)
             from LedgerEntry e
             where e.accountId = :accountId
        """)
     Long netCredits(@Param("accountId") Long accountId);
+
+
 }
