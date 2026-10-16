@@ -9,7 +9,7 @@ Built with Spring Boot 4, MySQL, and (later) Redis and Kafka.
 Signup/login, accounts, balance check, add money, transfer, statement.
 
 ### Group B: Making money features useful
-Categories, notes and tags on payments, auto pay (scheduled payments).
+Categories, notes and tags on payments, auto-pay (scheduled payments).
 
 ### Group C: Trust and safety
 KYC with tiers, cards, block/report users, fraud rules, support tickets.

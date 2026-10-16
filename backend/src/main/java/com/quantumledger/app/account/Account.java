@@ -30,6 +30,9 @@ public class Account {
     @Column(nullable = false, length = 3)
     private String currency;
 
+    @Column(name = "balance_minor", nullable = false)
+    private long balanceMinor;
+
     @Column(nullable = false)
     private String status = "ACTIVE";
 
@@ -83,6 +86,8 @@ public class Account {
     public String getCurrency() {
         return currency;
     }
+
+    public long getBalanceMinor() {return balanceMinor; }
 
     public String getStatus() {
         return status;

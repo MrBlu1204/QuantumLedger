@@ -37,6 +37,15 @@ DEBIT sender wallet 25500 / CREDIT receiver wallet 25000 / CREDIT FEE_INCOME 500
 SELECT fk_ledger_transaction_id,
        SUM(CASE direction WHEN 'DEBIT' THEN amount_minor ELSE -amount_minor END) AS imbalance
 FROM ledger_entries GROUP BY fk_ledger_transaction_id HAVING imbalance <> 0;
+
+
+SELECT a.account_id, a.account_type, a.balance_minor,
+       COALESCE(SUM(CASE WHEN e.direction = IF(a.account_type = 'ASSET', 'DEBIT', 'CREDIT')
+                           THEN e.amount_minor ELSE -e.amount_minor END), 0) AS computed
+FROM accounts a
+       LEFT JOIN ledger_entries e ON e.fk_account_id = a.account_id
+GROUP BY a.account_id, a.account_type, a.balance_minor
+HAVING a.balance_minor <> computed;
 ```
 
 ## Data model
