@@ -53,3 +53,22 @@
   deny-list on jti, phase 5), no failed-login limiting (Redis rate limiter, phase 5),
   symmetric signing key (move to asymmetric keys and a vault, phase 5.5), no grace window
   for refresh retries (phase 4).
+
+## 008 – Money as integer minor units
+- All amounts are BIGINT paise. APIs return paise (balanceMinor); clients format.
+- Reason: floating point can't represent most decimals, and ledger checks need exact equality.
+
+## 009 – Immutable double-entry ledger
+- Tables: ledger_transactions, ledger_entries. Entries are positive amounts plus a direction.
+- Accounts table holds user wallets and platform accounts (BANK_SETTLEMENT, FEE_INCOME),
+  seeded by migration V5. A CHECK ties account type to ownership.
+- A user's external bank is transaction metadata, not a ledger account.
+- Balance is derived from entries; a cached balance arrives with the posting engine.
+- Reversals are new transactions that reference the original (at most one, by UNIQUE constraint).
+
+## 010 – Wallet creation via a synchronous application event
+- UserService publishes UserRegisteredEvent; the account module listens and creates the wallet
+  inside the signup transaction.
+- Reason: one-way dependency (account depends on user), easy to extend, and no wallet-less users.
+- Cost: the flow is less visible when reading UserService. Post-commit reactions (emails)
+  will use a different listener type later.

@@ -1,5 +1,6 @@
 package com.quantumledger.app.common;
 
+import com.quantumledger.app.account.AccountNotFoundException;
 import com.quantumledger.app.auth.AccountNotActiveException;
 import com.quantumledger.app.auth.InvalidCredentialsException;
 import com.quantumledger.app.auth.InvalidRefreshTokenException;
@@ -68,6 +69,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String,Object>> handleInvalidRefresh(InvalidRefreshTokenException ex){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error","INVALID_REFRESH_TOKEN","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String,Object>> handleAccountNotFound(AccountNotFoundException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error","ACCOUNT_NOT_FOUND","message",ex.getMessage()));
     }
 
 }

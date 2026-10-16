@@ -14,7 +14,7 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "account_id")
-    private int accountId;
+    private Long accountId;
 
     @Column(name = "fk_user_id")
     private Long userId;
@@ -64,7 +64,7 @@ public class Account {
         this.updateTime = Instant.now();
     }
 
-    public int getAccountId() {
+    public Long getAccountId() {
         return accountId;
     }
 

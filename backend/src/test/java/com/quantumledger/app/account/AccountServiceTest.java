@@ -1,5 +1,7 @@
 package com.quantumledger.app.account;
 
+import com.quantumledger.app.ledger.LedgerService;
+import com.quantumledger.app.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +20,12 @@ class AccountServiceTest {
 
     @Mock
     AccountRepository accountRepository;
+
+    @Mock
+    LedgerService ledgerService;
+
+    @Mock
+    UserService userService;
 
     @InjectMocks
     AccountService accountService;

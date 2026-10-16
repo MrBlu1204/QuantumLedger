@@ -47,6 +47,18 @@ Prerequisites: JDK 17, Docker Desktop.
 ```
 3. Run `QuantumLedgerApplication` (or `./mvnw spring-boot:run` in `backend`).
 
+## API (so far)
+| Method | Path                      | Auth        | Purpose                          |
+|--------|---------------------------|-------------|----------------------------------|
+| POST   | /api/v1/auth/signup       | public      | Create a user and wallet         |
+| POST   | /api/v1/auth/login        | public      | Get access and refresh tokens    |
+| POST   | /api/v1/auth/refresh      | public      | Rotate refresh token             |
+| POST   | /api/v1/auth/logout       | public      | End one session                  |
+| POST   | /api/v1/auth/logout-all   | Bearer      | End all sessions                 |
+| GET    | /api/v1/me                | Bearer      | Current user's profile           |
+| GET    | /api/v1/accounts/me       | Bearer      | Wallet and balance (paise)       |
+| GET    | /api/v1/ping              | public      | Liveness and database check      |
+
 ## Docs
 
 See `docs/` for the scope, the decision log, and the roadmap.
