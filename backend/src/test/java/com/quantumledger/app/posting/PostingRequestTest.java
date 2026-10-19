@@ -1,5 +1,9 @@
-package com.quantumledger.app.ledger;
+package com.quantumledger.app.posting;
 
+import com.quantumledger.app.ledger.InvalidPostingException;
+import com.quantumledger.app.ledger.LedgerTransactionType;
+import com.quantumledger.app.ledger.PostingLine;
+import com.quantumledger.app.ledger.PostingRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -88,13 +92,12 @@ public class PostingRequestTest {
     void rejectsOverflowThatWouldLookBalanced(){
         // Two huge debits wrap around to a small negative number with plain addition.
         // Math.addExact throws instead, so this is rejected.
-        assertThrows(InvalidPostingException.class,
-                () -> request(List.of(
-                        PostingLine.debit(ASHA, Long.MAX_VALUE),
-                        PostingLine.credit(RAVI, Long.MAX_VALUE),
-                        PostingLine.credit(BANK, 2)
-                ))
-        );
+        // Without addExact: debits wrap to -2 and credits wrap to -2, so they look equal.
+        assertThrows(InvalidPostingException.class, () -> request(List.of(
+                PostingLine.debit(ASHA, Long.MAX_VALUE),
+                PostingLine.debit(RAVI, Long.MAX_VALUE),
+                PostingLine.credit(BANK, Long.MAX_VALUE),
+                PostingLine.credit(FEE, Long.MAX_VALUE))));
     }
 
     @Test

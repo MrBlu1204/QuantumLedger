@@ -1,6 +1,8 @@
 package com.quantumledger.app.common;
 
+import com.quantumledger.app.account.AccountFrozenException;
 import com.quantumledger.app.account.AccountNotFoundException;
+import com.quantumledger.app.account.InsufficientFundsException;
 import com.quantumledger.app.auth.AccountNotActiveException;
 import com.quantumledger.app.auth.InvalidCredentialsException;
 import com.quantumledger.app.auth.InvalidRefreshTokenException;
@@ -75,6 +77,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String,Object>> handleAccountNotFound(AccountNotFoundException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error","ACCOUNT_NOT_FOUND","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<Map<String,Object>> handleInsufficientFunds(InsufficientFundsException ex){
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error","INSUFFICIENT_FUNDS","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccountFrozenException.class)
+    public ResponseEntity<Map<String,Object>> handleAccountFrozen(AccountFrozenException ex){
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error","ACCOUNT_FROZEN","message",ex.getMessage()));
     }
 
 }

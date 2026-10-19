@@ -1,6 +1,7 @@
 package com.quantumledger.app.account;
 
 
+import com.quantumledger.app.ledger.Direction;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -95,5 +96,28 @@ public class Account {
 
     public Instant getCreateTime() {
         return createTime;
+    }
+
+
+    public boolean isActive() {
+        return "ACTIVE".equals(status);
+    }
+
+    /** Applies one ledger entry to this account's cached balance. */
+    public void applyEntry(Direction direction, long amountMinor) {
+
+        long delta =(direction == accountType.normalBalanceSide()) ? amountMinor : -amountMinor;
+
+        long newBalance;
+
+        try{
+            newBalance = Math.addExact(balanceMinor, delta);
+        }catch(ArithmeticException e){
+            throw new IllegalStateException("Balance overflow on account " + accountId, e);
+        }
+        if(newBalance < 0) {
+            throw new InsufficientFundsException("Insufficient funds");
+        }
+        this.balanceMinor = newBalance;
     }
 }
