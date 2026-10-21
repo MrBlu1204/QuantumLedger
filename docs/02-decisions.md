@@ -72,3 +72,18 @@
 - Reason: one-way dependency (account depends on user), easy to extend, and no wallet-less users.
 - Cost: the flow is less visible when reading UserService. Post-commit reactions (emails)
   will use a different listener type later.
+
+## 011 – One posting engine, in its own package
+- PostingService (package posting) is the only writer of ledger entries. posting depends on
+  account and ledger; they do not depend on it, so there are no circular dependencies.
+
+## 012 – Cached balance, pessimistic locks
+- accounts.balance_minor is a cache with CHECK >= 0, updated in the same transaction as the entries.
+- Pessimistic locking (SELECT ... FOR UPDATE), not optimistic: wallets are the most
+  correctness-critical rows and contention on them is expected.
+- Drift is detected by a reconciliation job; it is never auto-repaired.
+
+## 013 – Tests run against a real MySQL
+- Testcontainers (mysql:8.4), one container per test run, tests are not @Transactional.
+- Concurrency tests use a start gate and exact expected outcomes. Experiments that break the
+  lock and the lock order were run to confirm the tests can fail.

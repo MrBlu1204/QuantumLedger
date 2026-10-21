@@ -59,6 +59,13 @@ Prerequisites: JDK 17, Docker Desktop.
 | GET    | /api/v1/accounts/me       | Bearer      | Wallet and balance (paise)       |
 | GET    | /api/v1/ping              | public      | Liveness and database check      |
 
+## Tests
+Docker Desktop must be running (tests start a throwaway MySQL with Testcontainers).
+```
+cd backend
+./mvnw test
+```
+
 ## Docs
 
 See `docs/` for the scope, the decision log, and the roadmap.

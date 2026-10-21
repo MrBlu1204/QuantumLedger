@@ -2,11 +2,13 @@ package com.quantumledger.app;
 
 import com.quantumledger.app.account.Account;
 import com.quantumledger.app.account.AccountRepository;
+import com.quantumledger.app.ledger.LedgerService;
 import com.quantumledger.app.ledger.LedgerTransactionType;
 import com.quantumledger.app.ledger.PostingLine;
 import com.quantumledger.app.ledger.PostingRequest;
 import com.quantumledger.app.posting.PostingResult;
 import com.quantumledger.app.posting.PostingService;
+import com.quantumledger.app.reconciliation.ReconciliationService;
 import com.quantumledger.app.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,8 @@ public abstract class AbstractIntegrationTest {
         // A throwaway, test-only signing key. It protects nothing.
         registry.add("app.security.jwt.secret", () -> Base64.getEncoder().encodeToString(
                 "test-only-signing-key-0123456789!!".getBytes(StandardCharsets.UTF_8)));
+        registry.add("spring.datasource.hikari.maximum-pool-size",() -> "60");
+        registry.add("app.reconciliation.enabled", () -> "false");
     }
 
     private static final AtomicLong COUNTER = new AtomicLong(1);
@@ -53,6 +57,7 @@ public abstract class AbstractIntegrationTest {
     @Autowired protected AccountRepository accountRepository;
     @Autowired protected PostingService postingService;
     @Autowired protected UserService userService;
+    @Autowired protected ReconciliationService reconciliationService;
 
     @BeforeEach
     void resetDatabase() {
@@ -90,6 +95,12 @@ public abstract class AbstractIntegrationTest {
                         PostingLine.credit(wallet.getAccountId(),amountMinor))));
     }
 
+    protected PostingRequest transfer(Account from, Account to, long amountMinor){
+        return new PostingRequest(LedgerTransactionType.TRANSFER,"test transfer", "INR",
+                List.of(PostingLine.debit(from.getAccountId(), amountMinor),
+                        PostingLine.credit(to.getAccountId(), amountMinor)));
+    }
+
     /** Reads straight from the DB, never from a possibly stale entity. */
     protected long balanceOf(Account account){
         return jdbc.queryForObject("SELECT balance_minor FROM accounts WHERE account_id = ?",
@@ -100,7 +111,8 @@ public abstract class AbstractIntegrationTest {
         return jdbc.queryForObject("SELECT COUNT(*) FROM ledger_entries", Long.class);
     }
 
-    /** should always be empty: every ledger transaction balances. */
+    /** migrated to ReconciliationService class for scheduling job
+    // should always be empty: every ledger transaction balances.
     protected List<Map<String, Object>> unbalancedTransactions() {
         return jdbc.queryForList("""
                 SELECT fk_ledger_transaction_id,
@@ -109,9 +121,15 @@ public abstract class AbstractIntegrationTest {
                 GROUP BY fk_ledger_transaction_id
                 HAVING imbalance <> 0
                 """);
+    }*/
+
+    protected List<?> unbalancedTransactions() {
+        return reconciliationService.check().unbalancedTransactions();
     }
 
-    /** should always be empty: every cached balance equals the sum of its entries. */
+
+    /** migrated to ReconciliationService class for scheduling job
+    // should always be empty: every cached balance equals the sum of its entries.
     protected List<Map<String, Object>> balanceMismatches() {
         return jdbc.queryForList("""
                 SELECT a.account_id, a.balance_minor,
@@ -122,5 +140,11 @@ public abstract class AbstractIntegrationTest {
                 GROUP BY a.account_id, a.account_type, a.balance_minor
                 HAVING a.balance_minor <> computed
                 """);
+    }*/
+
+    protected List<?> balanceMismatches() {
+        return reconciliationService.check().balanceMismatches();
     }
+
+
 }

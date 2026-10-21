@@ -58,3 +58,23 @@ erDiagram
   ledger_transactions ||--|{ ledger_entries : contains
   ledger_transactions |o--o| ledger_transactions : reverses
 ```
+
+## The posting engine
+`PostingService.post(PostingRequest)` is the only code allowed to write ledger entries.
+1. `PostingRequest` is validated on construction: >= 2 lines, one currency, positive amounts,
+   each account at most once, debits == credits (overflow-safe).
+2. Accounts are locked with SELECT ... FOR UPDATE in ascending id order (prevents deadlocks).
+3. Currency and status are checked after the lock is held.
+4. Balances are updated through Account.applyEntry (rejects a negative result).
+5. The ledger transaction and its entries are inserted. All of this is one DB transaction.
+
+## Concurrency rules
+- Lock order is always ascending account id.
+- Deadlock retries and idempotency keys are added outside the transaction (Day 6 / phase 5).
+- A very busy account (a merchant wallet) serializes on one row. Revisit in phase 14.
+
+## Reconciliation
+ReconciliationService checks two invariants in one consistent snapshot:
+1. every ledger transaction has debits == credits;
+2. every account's balance_minor equals the sum of its entries.
+   A scheduled job runs it and logs ERROR on any failure. It never repairs data automatically.

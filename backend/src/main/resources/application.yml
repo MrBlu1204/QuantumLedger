@@ -24,6 +24,9 @@ app:
       issuer: quantumledger
       access-token-ttl-minutes: 15
       refresh-token-ttl-days: 7
+  reconciliation:
+    enabled: true
+    cron: "0 0 * * * *"             #every hour, on the hour
 
 logging:
   level:

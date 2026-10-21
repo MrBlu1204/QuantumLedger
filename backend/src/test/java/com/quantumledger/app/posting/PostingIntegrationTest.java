@@ -16,11 +16,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PostingIntegrationTest extends AbstractIntegrationTest {
 
+    /** Moved to AbstractIntegrationTest
     private PostingRequest transfer(Account from, Account to, long amount) {
         return new PostingRequest(LedgerTransactionType.TRANSFER, "test transfer", "INR",
                 List.of(PostingLine.debit(from.getAccountId(), amount),
                         PostingLine.credit(to.getAccountId(), amount)));
     }
+     */
 
     @Test
     void systemAccountsExistAfterMigrations(){
