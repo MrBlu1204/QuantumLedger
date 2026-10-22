@@ -16,7 +16,7 @@ CREATE TABLE transfers (
     CONSTRAINT unique_transfers_txn             UNIQUE (fk_transaction_id),
 
     CONSTRAINT fk_transfers_sender              FOREIGN KEY (fk_sender_id)          REFERENCES users (user_id),
-    CONSTRAINT fk_transfer_receiver             FOREIGN KEY (fk_receiver_id)        REFERENCES users (user_id),
+    CONSTRAINT fk_transfers_receiver            FOREIGN KEY (fk_receiver_id)        REFERENCES users (user_id),
     CONSTRAINT fk_transfers_sender_account      FOREIGN KEY (fk_sender_account_id)  REFERENCES accounts (account_id),
     CONSTRAINT fk_transfers_receiver_account    FOREIGN KEY (fk_receiver_account_id) REFERENCES accounts (account_id),
     CONSTRAINT fk_transfers_ledger_txn          FOREIGN KEY (fk_transaction_id)     REFERENCES ledger_transactions (ledger_transaction_id),

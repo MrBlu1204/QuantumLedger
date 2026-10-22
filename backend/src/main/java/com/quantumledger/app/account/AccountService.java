@@ -45,5 +45,11 @@ public class AccountService {
         return new WalletView(account, balance);
     }
 
+    @Transactional(readOnly = true)
+    public Account getWallet(Long userId) {
+        return accountRepository.findByUserIdAndCurrency(userId, DEFAULT_CURRENCY)
+                .orElseThrow(() -> new AccountNotFoundException("Wallet not found"));
+    }
+
 
 }

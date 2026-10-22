@@ -2,11 +2,9 @@ package com.quantumledger.app;
 
 import com.quantumledger.app.account.Account;
 import com.quantumledger.app.account.AccountRepository;
-import com.quantumledger.app.ledger.LedgerService;
 import com.quantumledger.app.ledger.LedgerTransactionType;
-import com.quantumledger.app.ledger.PostingLine;
-import com.quantumledger.app.ledger.PostingRequest;
-import com.quantumledger.app.posting.PostingResult;
+import com.quantumledger.app.posting.PostingLine;
+import com.quantumledger.app.posting.PostingRequest;
 import com.quantumledger.app.posting.PostingService;
 import com.quantumledger.app.reconciliation.ReconciliationService;
 import com.quantumledger.app.user.UserService;
@@ -21,7 +19,6 @@ import org.testcontainers.mysql.MySQLContainer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 @SpringBootTest

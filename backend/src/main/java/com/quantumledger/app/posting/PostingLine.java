@@ -1,4 +1,7 @@
-package com.quantumledger.app.ledger;
+package com.quantumledger.app.posting;
+
+import com.quantumledger.app.ledger.Direction;
+import com.quantumledger.app.ledger.InvalidPostingException;
 
 public record PostingLine(Long accountId, Direction direction, long amountMinor) {
 

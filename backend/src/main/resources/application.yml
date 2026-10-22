@@ -27,6 +27,9 @@ app:
   reconciliation:
     enabled: true
     cron: "0 0 * * * *"             #every hour, on the hour
+  transfer:
+    min-amount-minor: 100           #Rs 1
+    max-amount-minor: 100000        #Rs 1,00,000
 
 logging:
   level:
