@@ -45,7 +45,9 @@ public abstract class AbstractIntegrationTest {
         registry.add("app.security.jwt.secret", () -> Base64.getEncoder().encodeToString(
                 "test-only-signing-key-0123456789!!".getBytes(StandardCharsets.UTF_8)));
         registry.add("spring.datasource.hikari.maximum-pool-size",() -> "60");
+        registry.add("spring.datasource.hikari.minimum-idle",() -> "5");
         registry.add("app.reconciliation.enabled", () -> "false");
+
     }
 
     private static final AtomicLong COUNTER = new AtomicLong(1);
