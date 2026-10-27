@@ -2,11 +2,9 @@ package com.quantumledger.app;
 
 import com.quantumledger.app.account.Account;
 import com.quantumledger.app.account.AccountRepository;
-import com.quantumledger.app.ledger.LedgerService;
 import com.quantumledger.app.ledger.LedgerTransactionType;
-import com.quantumledger.app.ledger.PostingLine;
-import com.quantumledger.app.ledger.PostingRequest;
-import com.quantumledger.app.posting.PostingResult;
+import com.quantumledger.app.posting.PostingLine;
+import com.quantumledger.app.posting.PostingRequest;
 import com.quantumledger.app.posting.PostingService;
 import com.quantumledger.app.reconciliation.ReconciliationService;
 import com.quantumledger.app.user.UserService;
@@ -21,7 +19,6 @@ import org.testcontainers.mysql.MySQLContainer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 @SpringBootTest
@@ -48,7 +45,9 @@ public abstract class AbstractIntegrationTest {
         registry.add("app.security.jwt.secret", () -> Base64.getEncoder().encodeToString(
                 "test-only-signing-key-0123456789!!".getBytes(StandardCharsets.UTF_8)));
         registry.add("spring.datasource.hikari.maximum-pool-size",() -> "60");
+        registry.add("spring.datasource.hikari.minimum-idle",() -> "5");
         registry.add("app.reconciliation.enabled", () -> "false");
+
     }
 
     private static final AtomicLong COUNTER = new AtomicLong(1);
@@ -61,6 +60,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeEach
     void resetDatabase() {
+        jdbc.update("DELETE FROM transfers");
         jdbc.update("DELETE FROM ledger_entries");
         jdbc.update("DELETE FROM ledger_transactions ORDER BY ledger_transaction_id DESC");
         jdbc.update("DELETE FROM refresh_tokens");

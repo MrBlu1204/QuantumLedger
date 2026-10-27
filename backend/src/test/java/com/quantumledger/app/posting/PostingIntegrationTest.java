@@ -5,8 +5,6 @@ import com.quantumledger.app.account.Account;
 import com.quantumledger.app.account.AccountFrozenException;
 import com.quantumledger.app.account.InsufficientFundsException;
 import com.quantumledger.app.ledger.LedgerTransactionType;
-import com.quantumledger.app.ledger.PostingLine;
-import com.quantumledger.app.ledger.PostingRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessException;
 

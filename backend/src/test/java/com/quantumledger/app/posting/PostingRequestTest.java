@@ -2,8 +2,6 @@ package com.quantumledger.app.posting;
 
 import com.quantumledger.app.ledger.InvalidPostingException;
 import com.quantumledger.app.ledger.LedgerTransactionType;
-import com.quantumledger.app.ledger.PostingLine;
-import com.quantumledger.app.ledger.PostingRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class UserService{
 
@@ -64,6 +66,11 @@ public class UserService{
            throw new AccountNotActiveException("Account is not available");
        }
        return user;
+   }
+
+   @Transactional(readOnly = true)
+   public Optional<User> findByPhone(String countryCode, String phone) {
+       return userRepository.findByCountryCodeAndPhone(countryCode, phone);
    }
 
     private static String blankToNull(String value) {

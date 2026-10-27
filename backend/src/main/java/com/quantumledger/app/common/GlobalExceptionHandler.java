@@ -6,10 +6,14 @@ import com.quantumledger.app.account.InsufficientFundsException;
 import com.quantumledger.app.auth.AccountNotActiveException;
 import com.quantumledger.app.auth.InvalidCredentialsException;
 import com.quantumledger.app.auth.InvalidRefreshTokenException;
+import com.quantumledger.app.transfer.ReceiverNotFoundException;
+import com.quantumledger.app.transfer.TransferBusyException;
+import com.quantumledger.app.transfer.TransferRejectedException;
 import com.quantumledger.app.user.DuplicateUserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -89,6 +93,25 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String,Object>> handleAccountFrozen(AccountFrozenException ex){
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(Map.of("error","ACCOUNT_FROZEN","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(TransferRejectedException.class)
+    public ResponseEntity<Map<String,Object>> handleTransferRejected(TransferRejectedException ex){
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error", ex.getRejection().name(), "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(ReceiverNotFoundException.class)
+    public ResponseEntity<Map<String,Object>> handleReceiverNotFound(ReceiverNotFoundException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error","RECEIVER_NOT_FOUND","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(TransferBusyException.class)
+    public ResponseEntity<Map<String,Object>> handleTransferBusy(TransferBusyException ex){
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "1")
+                .body(Map.of("error","TEMPORARILY_UNAVAILABLE","message",ex.getMessage()));
     }
 
 }

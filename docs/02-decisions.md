@@ -87,3 +87,27 @@
 - Testcontainers (mysql:8.4), one container per test run, tests are not @Transactional.
 - Concurrency tests use a start gate and exact expected outcomes. Experiments that break the
   lock and the lock order were run to confirm the tests can fail.
+
+## 014 – A transfer is a business record plus a ledger posting, in one transaction
+- transfers table (who paid whom, status) is separate from the immutable ledger.
+- One UNIQUE link per ledger transaction. If either part fails, neither is saved.
+
+## 015 – Retries only for failures that guarantee a rollback
+- TransferFacade retries deadlocks and lock timeouts (allow-list), outside the transaction,
+  with exponential backoff and full jitter. Business rejections and unknown outcomes are never retried.
+- The facade refuses to run inside a transaction.
+
+## 016 – HTTP error semantics
+- 400 malformed, 422 business rule, 404 receiver unknown, 403 inactive sender, 503 busy (+ Retry-After).
+- Error bodies carry a stable machine-readable code.
+
+## 017 – Column naming conventions
+- fk_<role>_id references users (fk_sender_id); fk_<role>_account_id references accounts;
+  fk_transaction_id (transfers) references ledger_transactions.
+- Migrations V1 to V8 are never edited; older ledger tables keep fk_ledger_transaction_id.
+
+## 018 – Never load a row into the persistence context before locking it
+- A pessimistic lock query returns the already-loaded (possibly stale) entity instead of refreshing it.
+- TransferService therefore resolves wallets to ids only; PostingService is the only code that loads
+  and locks Account entities.
+- Regression tests: TransferConcurrencyTest (service level) and the parallel tests in TransferHttpTest.

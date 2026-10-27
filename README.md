@@ -58,6 +58,7 @@ Prerequisites: JDK 17, Docker Desktop.
 | GET    | /api/v1/me                | Bearer      | Current user's profile           |
 | GET    | /api/v1/accounts/me       | Bearer      | Wallet and balance (paise)       |
 | GET    | /api/v1/ping              | public      | Liveness and database check      |
+| POST   | /api/v1/transfers         | Bearer      | Send money to another user      |
 
 ## Tests
 Docker Desktop must be running (tests start a throwaway MySQL with Testcontainers).
