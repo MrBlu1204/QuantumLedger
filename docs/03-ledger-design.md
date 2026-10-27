@@ -51,12 +51,14 @@ HAVING a.balance_minor <> computed;
 ## Data model
 ```mermaid
 erDiagram
-  users ||--o| user_credentials : has
-  users ||--o{ refresh_tokens : has
-  users |o--o{ accounts : owns
-  accounts ||--o{ ledger_entries : "posted to"
-  ledger_transactions ||--|{ ledger_entries : contains
-  ledger_transactions |o--o| ledger_transactions : reverses
+    users ||--o| user_credentials : has
+    users ||--o{ refresh_tokens : has
+    users |o--o{ accounts : owns
+    accounts ||--o{ ledger_entries : "posted to"
+    ledger_transactions ||--|{ ledger_entries : contains
+    ledger_transactions |o--o| ledger_transactions : reverses
+    users ||--o{ transfers : "sends and receives"
+    ledger_transactions ||--o| transfers : "recorded by"
 ```
 
 ## The posting engine
