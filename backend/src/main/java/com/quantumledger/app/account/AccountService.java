@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AccountService {
 
-    private static final String DEFAULT_CURRENCY = "INR";
+    public static final String DEFAULT_CURRENCY = "INR";
 
     public record WalletView(Account account, long balanceMinor) {}
 
@@ -45,11 +45,17 @@ public class AccountService {
         return new WalletView(account, balance);
     }
 
+    /**
+     * Returns only the wallet's id, on purpose. Loading the Account itself here would
+     * put a stale copy in the persistence context before PostingService locks the row.
+     */
     @Transactional(readOnly = true)
-    public Account getWallet(Long userId) {
-        return accountRepository.findByUserIdAndCurrency(userId, DEFAULT_CURRENCY)
+    public Long getWalletId(Long userId) {
+        return accountRepository.findAccountId(userId, DEFAULT_CURRENCY)
                 .orElseThrow(() -> new AccountNotFoundException("Wallet not found"));
     }
+
+
 
 
 }

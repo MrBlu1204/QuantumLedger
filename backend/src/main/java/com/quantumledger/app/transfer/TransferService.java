@@ -1,6 +1,6 @@
 package com.quantumledger.app.transfer;
 
-import com.quantumledger.app.account.Account;
+
 import com.quantumledger.app.account.AccountService;
 import com.quantumledger.app.ledger.LedgerTransactionType;
 import com.quantumledger.app.posting.PostingLine;
@@ -65,21 +65,19 @@ public class TransferService {
             throw new TransferRejectedException(TransferRejection.RECEIVER_UNAVAILABLE);
         }
 
-        Account senderWallet = accountService.getWallet(sender.getUserId());
-        Account receiverWallet = accountService.getWallet(receiver.getUserId());
-        String currency = senderWallet.getCurrency();
+        Long senderAccountId = accountService.getWalletId(sender.getUserId());
+        Long receiverAccountId = accountService.getWalletId(receiver.getUserId());
+        String currency = AccountService.DEFAULT_CURRENCY;
 
-        PostingResult posting =  postingService.post(new PostingRequest(
+        PostingResult posting = postingService.post(new PostingRequest(
                 LedgerTransactionType.TRANSFER, "P2P transfer", currency,
-                List.of(PostingLine.debit(senderWallet.getAccountId(), amount),
-                        PostingLine.credit(receiverWallet.getAccountId(), amount))
-        ));
+                List.of(PostingLine.debit(senderAccountId, amount),
+                        PostingLine.credit(receiverAccountId, amount))));
 
         Transfer transfer = transferRepository.save(Transfer.completed(
                 sender.getUserId(), receiver.getUserId(),
-                senderWallet.getAccountId(), receiverWallet.getAccountId(),
-                amount, currency, posting.ledgerTransactionId()
-        ));
+                senderAccountId, receiverAccountId,
+                amount, currency, posting.ledgerTransactionId()));
 
         log.info("Transfer {} completed: amount={} ledgerTransaction={}",
                 transfer.getTransferRef(), amount, posting.ledgerTransactionId());

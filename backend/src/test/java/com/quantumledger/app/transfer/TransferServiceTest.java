@@ -1,6 +1,5 @@
 package com.quantumledger.app.transfer;
 
-import com.quantumledger.app.account.Account;
 import com.quantumledger.app.account.AccountService;
 import com.quantumledger.app.account.InsufficientFundsException;
 import com.quantumledger.app.auth.AccountNotActiveException;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
@@ -57,11 +55,6 @@ class TransferServiceTest {
         return u;
     }
 
-    private Account wallet(long accountId, long userId) {
-        Account a = Account.wallet(userId, "INR");
-        ReflectionTestUtils.setField(a, "accountId", accountId);
-        return a;
-    }
 
     private TransferService.TransferCommand command(long amount) {
         return new TransferService.TransferCommand(1L, COUNTRY, PHONE, amount);
@@ -69,13 +62,10 @@ class TransferServiceTest {
 
     private void givenSenderAndReceiver(User receiver) {
         User sender = user(1L, "Asha", "ACTIVE", false);
-        Account senderWallet = wallet(10L, 1L);
-        Account receiverWallet = wallet(20L, 2L);
-
         lenient().when(userService.getActiveUser(1L)).thenReturn(sender);
         lenient().when(userService.findByPhone(COUNTRY, PHONE)).thenReturn(Optional.of(receiver));
-        lenient().when(accountService.getWallet(1L)).thenReturn(senderWallet);
-        lenient().when(accountService.getWallet(2L)).thenReturn(receiverWallet);
+        lenient().when(accountService.getWalletId(1L)).thenReturn(10L);
+        lenient().when(accountService.getWalletId(2L)).thenReturn(20L);
     }
 
     @Test
