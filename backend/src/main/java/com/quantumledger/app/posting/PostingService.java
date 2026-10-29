@@ -38,7 +38,7 @@ public class PostingService {
         Map<Long, Account> locked = lockAccounts(request);
 
         for(Account account : locked.values()){
-            if(!account.getCurrency().equals(account.getCurrency())){
+            if(!account.getCurrency().equals(request.currency())){
                 throw new InvalidPostingException(
                         "currency mismatch on account " + account.getAccountId()
                 );
@@ -58,7 +58,8 @@ public class PostingService {
 
         List<LedgerEntry> entries = request.lines().stream()
                 .map(line -> new LedgerEntry(ledgerTransaction.getLedgerTransactionId(),
-                        line.accountId(), line.direction(), line.amountMinor(), request.currency()))
+                        line.accountId(), line.direction(), line.amountMinor(), request.currency(),
+                        locked.get(line.accountId()).getBalanceMinor()))
                 .toList();
 
         ledgerEntryRepository.saveAll(entries);

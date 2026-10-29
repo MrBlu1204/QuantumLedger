@@ -48,8 +48,9 @@ class ReconciliationServiceTest extends AbstractIntegrationTest {
         // Bypass the posting engine on purpose and write a lopsided transaction by hand.
         jdbc.update("INSERT INTO ledger_transactions (transaction_ref, transaction_type) VALUES (UUID(), 'TEST')");
         Long txnId = jdbc.queryForObject("SELECT MAX(ledger_transaction_id) FROM ledger_transactions", Long.class);
-        jdbc.update("INSERT INTO ledger_entries (fk_ledger_transaction_id, fk_account_id, direction, amount_minor, currency) "
-                + "VALUES (?, ?, 'DEBIT', 777, 'INR')", txnId, bank().getAccountId());
+        jdbc.update("INSERT INTO ledger_entries (fk_ledger_transaction_id, fk_account_id, direction, amount_minor, " +
+                "currency, balance_after_minor) "
+                + "VALUES (?, ?, 'DEBIT', 777, 'INR',0)", txnId, bank().getAccountId());
 
         ReconciliationReport report = reconciliationService.check();
 

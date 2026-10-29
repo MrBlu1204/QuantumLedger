@@ -37,9 +37,13 @@ public class LedgerEntry {
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;
 
+    @Column(name = "balance_after_minor", nullable = false, updatable = false)
+    private long balanceAfterMinor;
+
     protected LedgerEntry() {}
 
-    public LedgerEntry(Long ledgerTransactionId, Long accountId, Direction direction, long amountMinor, String currency) {
+    public LedgerEntry(Long ledgerTransactionId, Long accountId, Direction direction, long amountMinor,
+                       String currency, long balanceAfterMinor) {
 
         if(amountMinor <= 0) {
             throw new IllegalArgumentException("Ledger entry amount must be positive");
@@ -50,6 +54,7 @@ public class LedgerEntry {
         this.direction = direction;
         this.amountMinor = amountMinor;
         this.currency = currency;
+        this.balanceAfterMinor = balanceAfterMinor;
     }
 
     @PrePersist
@@ -84,4 +89,6 @@ public class LedgerEntry {
     public Instant getCreateTime() {
         return createTime;
     }
+
+    public long getBalanceAfterMinor() {return balanceAfterMinor;}
 }

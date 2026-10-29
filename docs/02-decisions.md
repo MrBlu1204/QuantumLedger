@@ -111,3 +111,16 @@
 - TransferService therefore resolves wallets to ids only; PostingService is the only code that loads
   and locks Account entities.
 - Regression tests: TransferConcurrencyTest (service level) and the parallel tests in TransferHttpTest.
+
+## 019 — Statements use keyset pagination on transfer_id
+- Decision: GET /api/v1/transfers returns newest-first pages using a cursor (last transfer_id, Base64), not page numbers.
+- Why: OFFSET gets slower with depth and shifts when new rows arrive; a cursor stays fast and stable. No COUNT(*) needed: fetch limit+1 rows to compute hasMore.
+- Query: two index-ordered queries (sender side, receiver side) combined with UNION ALL, top limit+1. Safe from duplicates because of chk_transfers_not_to_self. Uses existing idx_transfers_sender/receiver (fk_*_id, transfer_id); no V9 migration needed.
+- Contract: limit 1–200 (default 20), invalid -> 400; bad cursor -> 400 INVALID_CURSOR; only the caller's own transfers; counterparty exposed as first name only.
+- Trade-off: no total count and no jumping to page N. Acceptable for a statement feed.
+
+## 020 — Statements are built from ledger entries with a stored running balance
+- Decision: a statement line = one ledger entry on the user's wallet account; ledger_entries.balance_after_minor is written by PostingService under the account lock.
+- Why: shows balance per line; covers add-money, fees and refunds automatically (not only transfers); paging is a single-account index read. Computing running sums at read time gets slower with history.
+- Supersedes the transfers-based query in 019 (cursor, limit rules and response shape still apply; cursor becomes ledger_entry_id).
+- Trade-off: one more column to keep correct; reconciliation also verifies it.
