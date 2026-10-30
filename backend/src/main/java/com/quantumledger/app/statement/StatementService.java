@@ -1,6 +1,7 @@
 package com.quantumledger.app.statement;
 
 
+import com.quantumledger.app.account.AccountNotFoundException;
 import com.quantumledger.app.statement.StatementRepository.StatementRow;
 import com.quantumledger.app.account.AccountService;
 import org.springframework.stereotype.Service;
@@ -15,15 +16,14 @@ public class StatementService {
     public static final int MAX_PAGE_SIZE = 200;
 
     private final StatementRepository statementRepository;
-    private final AccountService accountService;
 
-    public StatementService(StatementRepository statementRepository, AccountService accountService) {
+    public StatementService(StatementRepository statementRepository) {
         this.statementRepository = statementRepository;
-        this.accountService = accountService;
+
     }
 
     @Transactional(readOnly = true)
-    public StatementPage getStatement(long userId, Integer limit, String cursor){
+    public StatementPage getStatement(long userId, long accountId, Integer limit, String cursor){
         int pageSize = limit == null ? DEFAULT_PAGE_SIZE : limit;
 
         if(pageSize < 1 || pageSize > MAX_PAGE_SIZE){
@@ -33,11 +33,13 @@ public class StatementService {
 
         long before = cursor == null ?  Long.MAX_VALUE : StatementCursor.decode(cursor);
 
-        long walletId = accountService.getWalletId(userId);
+        if(!statementRepository.ownsWallet(userId, accountId)){
+            throw new AccountNotFoundException("account not found");
+        }
 
         //one extra row tells us whether next page exist, with no COUNT(*)
 
-        List<StatementRow> rows = statementRepository.findPage(userId, walletId, before, pageSize + 1);
+        List<StatementRow> rows = statementRepository.findPage(userId, accountId, before, pageSize + 1);
 
         boolean hasMore = rows.size() > pageSize;
 

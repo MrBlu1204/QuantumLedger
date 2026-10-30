@@ -26,6 +26,11 @@ public class StatementRepository {
             LIMIT ?
             """;
 
+    private static final String OWNS_WALLET = """
+            SELECT COUNT(*) FROM accounts
+            WHERE account_id = ? AND fk_user_id = ? AND account_type = 'WALLET'
+            """;
+
     private final JdbcTemplate jdbc;
 
     public StatementRepository(JdbcTemplate jdbc) {
@@ -49,5 +54,10 @@ public class StatementRepository {
                                 .toInstant(ZoneOffset.UTC)
                 )
         ), userId, walletAccountId, before, fetch);
+    }
+
+    public boolean ownsWallet(long userId, long accountId){
+        Long count = jdbc.queryForObject(OWNS_WALLET, Long.class, accountId, userId);
+        return count != null && count > 0;
     }
 }

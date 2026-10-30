@@ -90,5 +90,15 @@ class StatementRepositoryTest extends AbstractIntegrationTest {
         assertTrue(page(asha, FIRST_PAGE, 21).isEmpty());
     }
 
+    @Test
+    void ownsWalletIsTrueOnlyForTheWalletsOwner(){
+        Account asha = newWallet("Asha");
+        Account ravi = newWallet("Ravi");
+
+        assertTrue(statementRepository.ownsWallet(asha.getUserId(), asha.getAccountId()));
+        assertFalse(statementRepository.ownsWallet(asha.getUserId(), ravi.getAccountId()));
+        assertFalse(statementRepository.ownsWallet(asha.getUserId(), 999_999L));
+    }
+
 
 }
