@@ -2,6 +2,7 @@ package com.quantumledger.app.reconciliation;
 
 import com.quantumledger.app.reconciliation.ReconciliationReport.UnbalancedTransaction;
 import com.quantumledger.app.reconciliation.ReconciliationReport.BalanceMismatch;
+import com.quantumledger.app.reconciliation.ReconciliationReport.RunningBalanceMismatch;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,22 @@ public class ReconciliationService {
                  ORDER BY a.account_id
            """;
 
+    private static final String RUNNING_BALANCE_MISMATCHES = """
+            SELECT ledger_entry_id, account_id, stored_balance, computed_balance
+            FROM (
+                SELECT e.ledger_entry_id, e.fk_account_id AS account_id,
+                       e.balance_after_minor AS stored_balance,
+                       SUM(CASE WHEN e.direction = IF(a.account_type = 'ASSET', 'DEBIT', 'CREDIT')
+                                THEN e.amount_minor ELSE -e.amount_minor END)
+                           OVER (PARTITION BY e.fk_account_id ORDER BY e.ledger_entry_id) AS computed_balance
+                FROM ledger_entries e
+                JOIN accounts a ON a.account_id = e.fk_account_id
+            ) t
+            WHERE stored_balance <> computed_balance
+            ORDER BY ledger_entry_id
+            """;
+
+
     private final JdbcTemplate jdbc;
 
     public ReconciliationService(JdbcTemplate jdbc) {
@@ -53,6 +70,14 @@ public class ReconciliationService {
                         rs.getLong("computed_balance")
                 ));
 
-        return new ReconciliationReport(unbalanced, mismatches);
+        List<RunningBalanceMismatch> runningMismatches = jdbc.query(RUNNING_BALANCE_MISMATCHES,
+                (rs, i) -> new RunningBalanceMismatch(
+                        rs.getLong("ledger_entry_id"),
+                        rs.getLong("account_id"),
+                        rs.getLong("stored_balance"),
+                        rs.getLong("computed_balance")
+                ));
+
+        return new ReconciliationReport(unbalanced, mismatches, runningMismatches);
     }
 }

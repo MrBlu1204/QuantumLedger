@@ -6,6 +6,7 @@ import com.quantumledger.app.account.InsufficientFundsException;
 import com.quantumledger.app.auth.AccountNotActiveException;
 import com.quantumledger.app.auth.InvalidCredentialsException;
 import com.quantumledger.app.auth.InvalidRefreshTokenException;
+import com.quantumledger.app.statement.InvalidStatementRequestException;
 import com.quantumledger.app.transfer.ReceiverNotFoundException;
 import com.quantumledger.app.transfer.TransferBusyException;
 import com.quantumledger.app.transfer.TransferRejectedException;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -112,6 +114,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .header(HttpHeaders.RETRY_AFTER, "1")
                 .body(Map.of("error","TEMPORARILY_UNAVAILABLE","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidStatementRequestException.class)
+    public ResponseEntity<Map<String,Object>> handleInvalidStatementRequest(InvalidStatementRequestException ex){
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", ex.getCode(), "message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String,Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex){
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", "VALIDATION_FAILED","message", "invalid value for '" +ex.getName() + "'"));
     }
 
 }

@@ -43,13 +43,39 @@ class ReconciliationServiceTest extends AbstractIntegrationTest {
         assertTrue(report.unbalancedTransactions().isEmpty());
     }
 
+
+    // Running balance mismatch test
+    @Test
+    void detectsEntryWhoseStoredRunningBalanceIsWrong(){
+        Account asha = newWallet("Asha");
+        fund(asha, 1_000);
+
+        jdbc.update("UPDATE ledger_entries SET balance_after_minor = 999 WHERE fk_account_id = ?",
+                asha.getAccountId());
+
+        ReconciliationReport report = reconciliationService.check();
+
+        assertFalse(report.isHealthy());
+        assertEquals(1, report.runningBalanceMismatches().size());
+
+        ReconciliationReport.RunningBalanceMismatch mismatch = report.runningBalanceMismatches().get(0);
+        assertEquals(asha.getAccountId(), mismatch.accountId());
+        assertEquals(999, mismatch.storedMinor());
+        assertEquals(1_000, mismatch.computedMinor());
+        assertTrue(report.balanceMismatches().isEmpty());
+        assertTrue(report.unbalancedTransactions().isEmpty());
+    }
+
+
+
     @Test
     void detectsUnbalancedLedgerTransactions(){
         // Bypass the posting engine on purpose and write a lopsided transaction by hand.
         jdbc.update("INSERT INTO ledger_transactions (transaction_ref, transaction_type) VALUES (UUID(), 'TEST')");
         Long txnId = jdbc.queryForObject("SELECT MAX(ledger_transaction_id) FROM ledger_transactions", Long.class);
-        jdbc.update("INSERT INTO ledger_entries (fk_ledger_transaction_id, fk_account_id, direction, amount_minor, currency) "
-                + "VALUES (?, ?, 'DEBIT', 777, 'INR')", txnId, bank().getAccountId());
+        jdbc.update("INSERT INTO ledger_entries (fk_ledger_transaction_id, fk_account_id, direction, amount_minor, " +
+                "currency, balance_after_minor) "
+                + "VALUES (?, ?, 'DEBIT', 777, 'INR',0)", txnId, bank().getAccountId());
 
         ReconciliationReport report = reconciliationService.check();
 

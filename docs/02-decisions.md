@@ -111,3 +111,25 @@
 - TransferService therefore resolves wallets to ids only; PostingService is the only code that loads
   and locks Account entities.
 - Regression tests: TransferConcurrencyTest (service level) and the parallel tests in TransferHttpTest.
+
+## 019 — (superseded by 020) Statements use keyset pagination on transfer_id
+- Decision: GET /api/v1/transfers returns newest-first pages using a cursor (last transfer_id, Base64), not page numbers.
+- Why: OFFSET gets slower with depth and shifts when new rows arrive; a cursor stays fast and stable. No COUNT(*) needed: fetch limit+1 rows to compute hasMore.
+- Query: two index-ordered queries (sender side, receiver side) combined with UNION ALL, top limit+1. Safe from duplicates because of chk_transfers_not_to_self. Uses existing idx_transfers_sender/receiver (fk_*_id, transfer_id); no V9 migration needed.
+- Contract: limit 1–200 (default 20), invalid -> 400; bad cursor -> 400 INVALID_CURSOR; only the caller's own transfers; counterparty exposed as first name only.
+- Trade-off: no total count and no jumping to page N. Acceptable for a statement feed.
+
+## 020 — Statements are built from ledger entries with a stored running balance
+- Endpoint: GET /api/v1/accounts/{accountId}/statement?limit=20&cursor=... (one statement per wallet, so a user can own several).
+- A statement line = one ledger entry on that wallet. ledger_entries.balance_after_minor is written by PostingService under the account lock, backfilled by V9, and verified by the reconciliation job.
+- Keyset pagination on ledger_entry_id: cursor is the last entry shown, Base64, opaque. limit 1-200 (default 20); fetch limit+1 rows to compute hasMore, no COUNT(*).
+- Errors: 400 VALIDATION_FAILED / INVALID_CURSOR; 404 ACCOUNT_NOT_FOUND for another user's wallet and for an unknown wallet alike (ids cannot be probed).
+- Direction is IN/OUT (API vocabulary), separate from the ledger's DEBIT/CREDIT. Counterparty first name appears on transfer lines only.
+- Why not the transfers table: add-money, fees and refunds are not transfers; a per-line balance needs the ledger.
+- Trade-off: one more column to keep correct; no total count and no jump-to-page-N.
+
+
+### Known limitations (deliberate, with the phase that fixes each)
+- GET /api/v1/accounts/me assumes one wallet; becomes a list endpoint when a second wallet is added.
+- Reconciliation's running-balance check scans every entry; needs an id or time window at scale (phase 14).
+- Statement reads are not blocked for BLOCKED users (read-only access; revisit in the KYC phase).

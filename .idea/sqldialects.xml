@@ -7,7 +7,9 @@
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/db/migration/V4__create_refresh_tokens.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/db/migration/V5__evolve_accounts.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/db/migration/V6__create_ledger.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/db/migration/V7__add_account_balance.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources/db/migration/V8__create_transfers.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/backend/src/main/resources/db/migration/V9__add_balance_after_to_ledger_entries.sql" dialect="MySQL" />
     <file url="PROJECT" dialect="MySQL" />
   </component>
 </project>

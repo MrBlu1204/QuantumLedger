@@ -28,17 +28,22 @@ public class ReconciliationJob {
             return;
         }
 
-        log.error("RECONCILIATION FAILED: {} unbalanced transaction(s), {} balance mismatch(es)",
-                report.unbalancedTransactions().size(), report.balanceMismatches().size());
+        log.error("RECONCILIATION FAILED: {} unbalanced transaction(s), {} balance mismatch(es), {} running balance " +
+                        "mismatch(es)",
+                report.unbalancedTransactions().size(), report.balanceMismatches().size(), report.runningBalanceMismatches().size());
 
-        report.unbalancedTransactions().forEach(reconciliation ->
+        report.unbalancedTransactions().forEach(mismatch ->
             log.error("     ledger transaction {} is out of balance by {} minor units",
-                    reconciliation.ledgerTransactionId(), reconciliation.imbalanceMinor())
+                    mismatch.ledgerTransactionId(), mismatch.imbalanceMinor())
         );
 
-        report.balanceMismatches().forEach(reconciliation ->
+        report.balanceMismatches().forEach(mismatch ->
                 log.error("     account {}  stored balance {} but entries add up to {}",
-                        reconciliation.accountId(), reconciliation.storedMinor(), reconciliation.computedMinor())
+                        mismatch.accountId(), mismatch.storedMinor(), mismatch.computedMinor())
         );
+
+        report.runningBalanceMismatches().forEach(mismatch ->
+                log.error("     ledger entry {} of account {} has stored balance {} but running balance is {}",
+                        mismatch.ledgerEntryId(), mismatch.accountId(), mismatch.storedMinor(), mismatch.computedMinor()));
     }
 }
