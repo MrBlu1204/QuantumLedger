@@ -32,3 +32,12 @@ jobs:
 
       - name: Build and test
         run: ./mvnw -B verify
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports
+          path: backend/target/surefire-reports/
+          retention-days: 7
+          if-no-files-found: ignore
