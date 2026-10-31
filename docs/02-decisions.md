@@ -128,8 +128,20 @@
 - Why not the transfers table: add-money, fees and refunds are not transfers; a per-line balance needs the ledger.
 - Trade-off: one more column to keep correct; no total count and no jump-to-page-N.
 
+## 021 — CI on GitHub Actions gates every merge to main
+- Workflow .github/workflows/ci.yml: on pull_request into main and push to main; Java 17 Temurin; `./mvnw -B verify` in backend/ (116 tests).
+- No DB service or secrets in CI: tests start their own MySQL via Testcontainers (Docker is preinstalled on ubuntu-latest) and set a throwaway JWT key themselves.
+- PR runs test the merge of the branch with current main; push-on-main verifies the squash commit. Stale runs on a branch are cancelled; main runs are never cancelled.
+- Least privilege: contents: read. Maven cache via setup-java; surefire reports uploaded only on failure.
+- main ruleset: PR required, check `build-and-test` must pass and be up to date, no force-push, squash-merge only. Gate proven with a deliberate failing test.
+- Trade-off: ~1m20s per run; CI minutes are a free-tier resource.
+
 
 ### Known limitations (deliberate, with the phase that fixes each)
 - GET /api/v1/accounts/me assumes one wallet; becomes a list endpoint when a second wallet is added.
 - Reconciliation's running-balance check scans every entry; needs an id or time window at scale (phase 14).
 - Statement reads are not blocked for BLOCKED users (read-only access; revisit in the KYC phase).
+- Actions are pinned by version tag, not commit SHA (supply-chain hardening later, with Dependabot for action and dependency updates).
+- No code coverage or static analysis in CI yet.
+- Docker Hub pulls of mysql:8.4 could hit rate limits on busy shared runners.
+- CI builds and tests only; it does not deploy. -> Phase 13.
