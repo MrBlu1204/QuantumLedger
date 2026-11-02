@@ -60,6 +60,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeEach
     void resetDatabase() {
+        jdbc.update("DELETE FROM add_money_requests");
         jdbc.update("DELETE FROM transfers");
         jdbc.update("DELETE FROM ledger_entries");
         jdbc.update("DELETE FROM ledger_transactions ORDER BY ledger_transaction_id DESC");
