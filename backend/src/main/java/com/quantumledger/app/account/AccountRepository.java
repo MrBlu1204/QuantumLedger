@@ -20,4 +20,7 @@ public interface AccountRepository extends JpaRepository<Account,Long> {
     @Query("SELECT a.accountId FROM Account a WHERE a.userId = :userId AND a.currency = :currency")
     Optional<Long> findAccountId(@Param("userId") Long userId, @Param("currency") String currency);
 
+    @Query("Select a.accountId from Account a where a.accountCode = :code")
+    Optional<Long> findIdByAccountCode(@Param("code") String code);
+
 }
