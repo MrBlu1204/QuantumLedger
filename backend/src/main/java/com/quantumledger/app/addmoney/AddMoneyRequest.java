@@ -1,5 +1,6 @@
 package com.quantumledger.app.addmoney;
 
+import com.quantumledger.app.payment.PaymentMethod;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -33,6 +34,11 @@ public class AddMoneyRequest {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(nullable = false, updatable = false)
+    private PaymentMethod method;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false)
     private AddMoneyStatus status;
 
@@ -54,8 +60,8 @@ public class AddMoneyRequest {
     protected AddMoneyRequest() { }
 
     public static AddMoneyRequest pending(Long userId, Long accountId,
-                                          long amountMinor, String currency) {
-        if(userId == null || accountId == null || currency == null) {
+                                          long amountMinor, String currency, PaymentMethod method) {
+        if(userId == null || accountId == null || currency == null || method == null) {
             throw new IllegalArgumentException("add-money request is missing required values(s)");
         }
 
@@ -69,6 +75,7 @@ public class AddMoneyRequest {
         request.accountId = accountId;
         request.amountMinor = amountMinor;
         request.currency = currency;
+        request.method = method;
         request.status = AddMoneyStatus.PENDING;
 
         return request;
@@ -130,6 +137,8 @@ public class AddMoneyRequest {
     public String getCurrency() {
         return currency;
     }
+
+    public PaymentMethod getMethod() {return method;}
 
     public long getAmountMinor() {
         return amountMinor;

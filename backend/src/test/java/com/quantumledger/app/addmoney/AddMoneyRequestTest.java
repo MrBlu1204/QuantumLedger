@@ -2,6 +2,7 @@ package com.quantumledger.app.addmoney;
 
 import com.quantumledger.app.AbstractIntegrationTest;
 import com.quantumledger.app.account.Account;
+import com.quantumledger.app.payment.PaymentMethod;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -16,7 +17,7 @@ class AddMoneyRequestTest extends AbstractIntegrationTest {
 
     private AddMoneyRequest savePending(Account wallet) {
         return repository.save(AddMoneyRequest.pending(
-                wallet.getUserId(), wallet.getAccountId(), 50_000, "INR"));
+                wallet.getUserId(), wallet.getAccountId(), 50_000, "INR", PaymentMethod.UPI));
     }
 
     private long someLedgerTransactionId(Account wallet) {
@@ -30,6 +31,7 @@ class AddMoneyRequestTest extends AbstractIntegrationTest {
         AddMoneyRequest saved = savePending(wallet);
 
         AddMoneyRequest found = repository.findById(saved.getAddMoneyId()).orElseThrow();
+        assertThat(found.getMethod()).isEqualTo(PaymentMethod.UPI);
         assertThat(found.getStatus()).isEqualTo(AddMoneyStatus.PENDING);
         assertThat(found.getRequestRef()).hasSize(36);
         assertThat(found.getAmountMinor()).isEqualTo(50_000);
@@ -68,7 +70,7 @@ class AddMoneyRequestTest extends AbstractIntegrationTest {
 
     @Test
     void finishedRequestCannotChangeAgain() {
-        AddMoneyRequest r = AddMoneyRequest.pending(1L, 2L, 100, "INR");
+        AddMoneyRequest r = AddMoneyRequest.pending(1L, 2L, 100, "INR", PaymentMethod.UPI);
         r.markFailed(null, "TIMEOUT");
 
         assertThatThrownBy(() -> r.markSuccess("GW-3", 9L))
