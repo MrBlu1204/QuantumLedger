@@ -23,4 +23,6 @@ public interface AccountRepository extends JpaRepository<Account,Long> {
     @Query("Select a.accountId from Account a where a.accountCode = :code")
     Optional<Long> findIdByAccountCode(@Param("code") String code);
 
+    boolean existsByAccountIdAndUserIdAndAccountType(Long accountId, Long userId, AccountType accountType);
+
 }
