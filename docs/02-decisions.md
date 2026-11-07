@@ -136,6 +136,26 @@
 - main ruleset: PR required, check `build-and-test` must pass and be up to date, no force-push, squash-merge only. Gate proven with a deliberate failing test.
 - Trade-off: ~1m20s per run; CI minutes are a free-tier resource.
 
+## 022 — Add-money is a three-phase flow. 
+- A PENDING add_money_requests row is committed first.
+- The gateway is then called outside any transaction
+- The outcome is settled in a second short transaction that locks the request row (SELECT ... FOR UPDATE) and re-checks PENDING. 
+- An unknown gateway outcome leaves the request PENDING, never FAILED. 
+- Settling an already-settled request is a no-op.
+
+
+## 023 — Payment Gateways
+-Payment gateways are a Strategy (PaymentGateway), keyed by PaymentMethod and chosen by PaymentGatewayFactory. 
+- Spring injects every gateway bean, and two gateways for one method make the app refuse to start. 
+- New providers are new classes, with no change to the service or the factory. 
+- Choosing between providers for the same method is deferred.
+
+## 024 — Only the database-only settle steps are retried
+- On lock conflicts and outside their transactions, through the shared LockConflictRetry in the common package. 
+- The gateway call is never retried, because it has a real-world side effect. 
+- When retries run out, the request stays PENDING and the client gets a 202. 
+- TransferFacade now uses the same class.
+
 
 ### Known limitations (deliberate, with the phase that fixes each)
 - GET /api/v1/accounts/me assumes one wallet; becomes a list endpoint when a second wallet is added.
