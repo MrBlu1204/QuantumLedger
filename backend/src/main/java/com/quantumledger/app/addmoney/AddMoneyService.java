@@ -3,6 +3,9 @@ package com.quantumledger.app.addmoney;
 import com.quantumledger.app.account.AccountNotFoundException;
 import com.quantumledger.app.account.AccountRepository;
 import com.quantumledger.app.account.AccountType;
+import com.quantumledger.app.common.LockConflictRetry;
+import com.quantumledger.app.common.RetriesExhaustedException;
+import com.quantumledger.app.common.Sleeper;
 import com.quantumledger.app.payment.*;
 import com.quantumledger.app.user.UserService;
 import org.slf4j.Logger;
@@ -29,17 +32,21 @@ public class AddMoneyService {
     private final PaymentGatewayFactory gatewayFactory;
     private final AddMoneyRecorder recorder;
     private final AddMoneyProperties properties;
+    private final LockConflictRetry settleRetry;
 
     public AddMoneyService(UserService userService,
                            AccountRepository accountRepository,
                            PaymentGatewayFactory gatewayFactory,
                            AddMoneyRecorder recorder,
-                           AddMoneyProperties properties) {
+                           AddMoneyProperties properties,
+                           AddMoneyRetryProperties retryProperties,
+                           Sleeper sleeper) {
         this.userService = userService;
         this.accountRepository = accountRepository;
         this.gatewayFactory = gatewayFactory;
         this.recorder = recorder;
         this.properties = properties;
+        this.settleRetry = new LockConflictRetry(retryProperties.maxAttempts(), retryProperties.baseDelayMs(), sleeper);
     }
 
     public AddMoneyReceipt addMoney(AddMoneyCommand command){
@@ -69,6 +76,7 @@ public class AddMoneyService {
         GatewayResult result;
 
         try{
+            // Called exactly once, never retried: it has a real-world side effect.
             result = gateway.collect(new GatewayRequest(
                     request.getRequestRef(), amount, request.getCurrency(), command.payerRef()
             ));
@@ -78,11 +86,20 @@ public class AddMoneyService {
             return receipt(request);
         }
 
-        AddMoneyRequest settled = result.successful()
-                ? recorder.settleSuccess(request.getAddMoneyId(), result.gatewayRef())
-                : recorder.settleFailure(request.getAddMoneyId(), result.gatewayRef(),  result.failureReason());
 
-        return receipt(settled);
+        try {
+            // Database-only and idompotent, so safe to repeat. Each attempt is its own transaction.
+            AddMoneyRequest settled = settleRetry.execute("add-money settlement", () -> result.successful()
+                    ? recorder.settleSuccess(request.getAddMoneyId(), result.gatewayRef())
+                    : recorder.settleFailure(request.getAddMoneyId(), result.gatewayRef(), result.failureReason()));
+
+            return receipt(settled);
+
+        } catch (RetriesExhaustedException ex) {
+            log.error("Add-money {} left PENDING, settlement kept hitting lock conflict (gatewayRef={}, approved={})",
+                    request.getRequestRef(), result.gatewayRef(), result.successful());
+            return receipt(request);
+        }
     }
 
 

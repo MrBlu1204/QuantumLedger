@@ -36,6 +36,9 @@ app:
   add-money:
     min-amount-minor: 100           #Rs 1
     max-amount-minor: 10000000      #Rs 1,00,000
+    retry:
+      max-attempts: 5
+      base-delay-ms: 50
 
 logging:
   level:
