@@ -59,6 +59,9 @@ Prerequisites: JDK 17, Docker Desktop.
 | GET    | /api/v1/accounts/me       | Bearer      | Wallet and balance (paise)       |
 | GET    | /api/v1/ping              | public      | Liveness and database check      |
 | POST   | /api/v1/transfers         | Bearer      | Send money to another user      |
+| POST   | /api/v1/accounts/{accountId}/statement?limit=20&cursor=<opaque>         | Bearer      | Get Transaction Statement for the user wallet      |
+| POST   | /api/v1/accounts/{accountId}/add-money         | Bearer      | Add money to users wallet from bank via UPI or NET_BANKING     |
+
 
 ## Tests
 Docker Desktop must be running (tests start a throwaway MySQL with Testcontainers).

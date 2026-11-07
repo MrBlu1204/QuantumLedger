@@ -3,9 +3,11 @@ package com.quantumledger.app.common;
 import com.quantumledger.app.account.AccountFrozenException;
 import com.quantumledger.app.account.AccountNotFoundException;
 import com.quantumledger.app.account.InsufficientFundsException;
+import com.quantumledger.app.addmoney.InvalidAddMoneyAmountException;
 import com.quantumledger.app.auth.AccountNotActiveException;
 import com.quantumledger.app.auth.InvalidCredentialsException;
 import com.quantumledger.app.auth.InvalidRefreshTokenException;
+import com.quantumledger.app.payment.UnsupportedPaymentMethodException;
 import com.quantumledger.app.statement.InvalidStatementRequestException;
 import com.quantumledger.app.transfer.ReceiverNotFoundException;
 import com.quantumledger.app.transfer.TransferBusyException;
@@ -17,6 +19,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -126,6 +129,25 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String,Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex){
         return ResponseEntity.badRequest()
                 .body(Map.of("error", "VALIDATION_FAILED","message", "invalid value for '" +ex.getName() + "'"));
+    }
+
+    @ExceptionHandler(InvalidAddMoneyAmountException.class)
+    public ResponseEntity<Map<String,Object>> handleInvalidAddMoneyAmount(InvalidAddMoneyAmountException ex){
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error","AMOUNT_OUT_OF_RANGE","message",ex.getMessage()));
+    }
+
+    @ExceptionHandler(UnsupportedPaymentMethodException.class)
+    public ResponseEntity<Map<String,Object>> handleUnsupportedPaymentMethod(UnsupportedPaymentMethodException ex){
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(Map.of("error","UNSUPPORTED_PAYMENT_METHOD","message",ex.getMessage()));
+    }
+
+    /** Malformed JSON or an unknown enum value such as "method":"BITCOIN". */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String,Object>> handleUnreadableBody(HttpMessageNotReadableException ex){
+        return ResponseEntity.badRequest()
+                .body(Map.of("error","VALIDATION_FAILED","message","malformed request body"));
     }
 
 }

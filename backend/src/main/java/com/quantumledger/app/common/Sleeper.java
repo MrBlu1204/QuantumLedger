@@ -1,4 +1,4 @@
-package com.quantumledger.app.transfer;
+package com.quantumledger.app.common;
 
 @FunctionalInterface
 public interface Sleeper {

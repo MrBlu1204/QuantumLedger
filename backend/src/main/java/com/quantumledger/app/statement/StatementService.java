@@ -3,7 +3,6 @@ package com.quantumledger.app.statement;
 
 import com.quantumledger.app.account.AccountNotFoundException;
 import com.quantumledger.app.statement.StatementRepository.StatementRow;
-import com.quantumledger.app.account.AccountService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
